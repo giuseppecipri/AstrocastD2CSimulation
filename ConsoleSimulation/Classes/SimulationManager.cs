@@ -29,6 +29,8 @@ namespace ConsoleSimulation
         // List of Devices for simulation (with same prefix)
         private List<DeviceEntity> listOfDevices;
 
+        private bool IsSimulationStart;
+
 
         public SimulationManager(string iotHubConnectionString, string prefixDevice, int numberOfDevices, int telemetryInterval = 1)
         {
@@ -131,9 +133,11 @@ namespace ConsoleSimulation
             return deviceConnectionString.ToString();
         }
 
-       public void LaunchTest()
+       public void StartSimulation()
         {
-            
+            // set true for launch simulation
+            IsSimulationStart = true;
+
             foreach (DeviceEntity device in listOfDevices)
             {
                 Console.WriteLine(device.Id);
@@ -143,13 +147,20 @@ namespace ConsoleSimulation
             }
 
         }
-        private async void SendDeviceToCloudMessagesAsync(DeviceClient deviceClient, string deviceId)
+
+        public void StopSimulation()
+        {
+            // set false for stop simulation
+            IsSimulationStart = false;
+        }
+
+            private async void SendDeviceToCloudMessagesAsync(DeviceClient deviceClient, string deviceId)
         {
             double minTemperature = 20;
             double minHumidity = 60;
             Random rand = new Random();
 
-            while (true)
+            while (IsSimulationStart)
             {
                 double currentTemperature = minTemperature + rand.NextDouble() * 15;
                 double currentHumidity = minHumidity + rand.NextDouble() * 20;
@@ -212,6 +223,8 @@ namespace ConsoleSimulation
 
                 await Task.Delay(telemetryInterval * 1000);
             }
+            Console.WriteLine("{0} : stop simulation", deviceId);
+
         }
         public async Task AddDevices()
         {

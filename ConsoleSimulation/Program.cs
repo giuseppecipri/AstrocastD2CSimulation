@@ -29,7 +29,14 @@ namespace ConsoleSimulation
 //          displayListOfDevices(simulation); // for test
 
             // Launch the simulation
-            simulation.LaunchTest();
+            simulation.StartSimulation();
+
+            // Wait for stop simulation
+            Console.WriteLine("Press the Enter key to stop simulation.");
+            Console.ReadLine();
+
+            // Stop simulation devices
+            simulation.StopSimulation();
 
             // Wait for exit
             Console.WriteLine("Press the Enter key to exit.");
