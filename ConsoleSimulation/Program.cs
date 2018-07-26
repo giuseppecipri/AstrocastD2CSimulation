@@ -12,13 +12,15 @@ namespace ConsoleSimulation
         private static string prefixDevice = "hesgc_astrocast_";
 
         // Number of devices to simulate
-        private static int NumberOfDevices = 30;
+        private static int NumberOfDevices = 2;
 
+        // Telemetry frequency (Seconds): Set how often to send telemetry from each device
+        private static int telemetryInterval = 1;
 
         static void Main(string[] args)
         {
             // Declare new simulation
-            SimulationManager simulation = new SimulationManager(connectionString, prefixDevice, NumberOfDevices);
+            SimulationManager simulation = new SimulationManager(connectionString, prefixDevice, NumberOfDevices, telemetryInterval);
 
             // Add devices to your IoT hub's identity registry
             simulation.AddDevices().Wait();
@@ -32,6 +34,7 @@ namespace ConsoleSimulation
             simulation.StartSimulation();
 
             // Wait for stop simulation
+            Console.ForegroundColor = ConsoleColor.Blue;
             Console.WriteLine("Press the Enter key to stop simulation.");
             Console.ReadLine();
 
@@ -39,6 +42,7 @@ namespace ConsoleSimulation
             simulation.StopSimulation();
 
             // Wait for exit
+            Console.ForegroundColor = ConsoleColor.Blue;
             Console.WriteLine("Press the Enter key to exit.");
             Console.ReadLine();
 

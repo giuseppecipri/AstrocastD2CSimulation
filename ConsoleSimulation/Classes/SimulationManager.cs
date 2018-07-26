@@ -29,17 +29,17 @@ namespace ConsoleSimulation
         // List of Devices for simulation (with same prefix)
         private List<DeviceEntity> listOfDevices;
 
-        private bool IsSimulationStart;
+        private bool isSimulationStart;
 
 
-        public SimulationManager(string iotHubConnectionString, string prefixDevice, int numberOfDevices, int telemetryInterval = 1)
+        public SimulationManager(string iotHubConnectionString, string prefixDevice, int numberOfDevices, int telemetryInterval)
         {
             this.iotHubConnectionString = iotHubConnectionString;
             this.numberOfDevices = numberOfDevices;
             this.prefixDevice = prefixDevice;
             this.listOfDevices = new List<DeviceEntity>();
             this.registryManager = RegistryManager.CreateFromConnectionString(iotHubConnectionString);
-            this.telemetryInterval = telemetryInterval; //  In thousandths of seconds
+            this.telemetryInterval = telemetryInterval; //  Seconds
         }
         public List<DeviceEntity> getListOfDevices()
         {
@@ -83,6 +83,8 @@ namespace ConsoleSimulation
                             deviceEntity.PrimaryKey = device.Authentication?.SymmetricKey?.PrimaryKey;
                             deviceEntity.SecondaryKey = device.Authentication?.SymmetricKey?.SecondaryKey;
 
+                            Console.ForegroundColor = ConsoleColor.Yellow;
+                            Console.WriteLine($"Device {deviceEntity.Id} got with registryManager.GetDeviceAsync");
                             listOfDevices.Add(deviceEntity);
                         }
                     }
@@ -136,14 +138,23 @@ namespace ConsoleSimulation
        public void StartSimulation()
         {
             // set true for launch simulation
-            IsSimulationStart = true;
+            isSimulationStart = true;
 
             foreach (DeviceEntity device in listOfDevices)
             {
-                Console.WriteLine(device.Id);
-                // Connect to the IoT hub using the MQTT protocol
-                DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(device.ConnectionString, Microsoft.Azure.Devices.Client.TransportType.Mqtt);
-                SendDeviceToCloudMessagesAsync(deviceClient, device.Id);
+                try
+                {
+  //                  Console.ResetColor();
+ //                   Console.WriteLine(device.Id);
+                    // Connect to the IoT hub using the MQTT protocol
+                    DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(device.ConnectionString, Microsoft.Azure.Devices.Client.TransportType.Mqtt);
+                    SendDeviceToCloudMessagesAsync(deviceClient, device.Id);
+                }
+                catch (Exception ex)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine(ex.Message);
+                }
             }
 
         }
@@ -151,41 +162,14 @@ namespace ConsoleSimulation
         public void StopSimulation()
         {
             // set false for stop simulation
-            IsSimulationStart = false;
+            isSimulationStart = false;
         }
 
             private async void SendDeviceToCloudMessagesAsync(DeviceClient deviceClient, string deviceId)
         {
-            double minTemperature = 20;
-            double minHumidity = 60;
-            Random rand = new Random();
 
-            while (IsSimulationStart)
+            while (isSimulationStart)
             {
-                double currentTemperature = minTemperature + rand.NextDouble() * 15;
-                double currentHumidity = minHumidity + rand.NextDouble() * 20;
-
-                string infoString;
-                string levelValue;
-
-                if (rand.NextDouble() > 0.7)
-                {
-                    if (rand.NextDouble() > 0.5)
-                    {
-                        levelValue = "critical";
-                        infoString = "This is a critical message.";
-                    }
-                    else
-                    {
-                        levelValue = "storage";
-                        infoString = "This is a storage message.";
-                    }
-                }
-                else
-                {
-                    levelValue = "normal";
-                    infoString = "This is a normal message.";
-                }
                 /*
                 var telemetryDataPoint = new
                 {
@@ -198,31 +182,22 @@ namespace ConsoleSimulation
                     humidity = currentHumidity
                 };
                 */
-                TelemetryData telemetryDataPoint = new TelemetryData
-                {
-                    protocolVersion = 1,
-                    sendingDateTime = DateTime.UtcNow,// DateTime.Now.ToUniversalTime();
-                    deviceId = deviceId,
-                    messageData = Convert.ToBase64String(ASCIIEncoding.UTF8.GetBytes(infoString)),
-                    //-----------------------------------
-                    pointInfo = infoString,
-                    temperature = currentTemperature,
-                    humidity = currentHumidity
-                };
+                TelemetryData telemetryDataObject = new TelemetryData(1, deviceId);
 
 
-
-                var telemetryDataString = JsonConvert.SerializeObject(telemetryDataPoint);
+                var telemetryDataString = JsonConvert.SerializeObject(telemetryDataObject);
 
                 //set the body of the message to the serialized value of the telemetry data
                 var message = new Microsoft.Azure.Devices.Client.Message(Encoding.ASCII.GetBytes(telemetryDataString));
-                message.Properties.Add("level", levelValue);
+                message.Properties.Add("level", telemetryDataObject.level);
 
                 await deviceClient.SendEventAsync(message);
+                Console.ResetColor();
                 Console.WriteLine("{0} > Sent message: {1}", DateTime.UtcNow, telemetryDataString);
 
                 await Task.Delay(telemetryInterval * 1000);
             }
+            Console.ForegroundColor = ConsoleColor.Yellow;
             Console.WriteLine("{0} : stop simulation", deviceId);
 
         }
@@ -236,10 +211,12 @@ namespace ConsoleSimulation
                 {
                     deviceID = prefixDevice + i;
                     await registryManager.AddDeviceAsync(new Device(deviceID));
+                    Console.ForegroundColor = ConsoleColor.Green;
                     Console.WriteLine($"Device added {deviceID}");
                 }
                 catch (Exception ex)
                 {
+                    Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine(ex.Message);
                 }
             }
@@ -255,10 +232,12 @@ namespace ConsoleSimulation
                 {
                     deviceID = prefixDevice + i;
                     await registryManager.RemoveDeviceAsync(deviceID);
+                    Console.ForegroundColor = ConsoleColor.Yellow;
                     Console.WriteLine($"Device removed {deviceID}");
                 }
                 catch (Exception ex)
                 {
+                    Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine(ex.Message);
                 }
             }
