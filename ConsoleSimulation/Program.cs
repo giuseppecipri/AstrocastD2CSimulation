@@ -1,9 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Azure.Devices;
 
 namespace ConsoleSimulation
 {
@@ -21,18 +17,25 @@ namespace ConsoleSimulation
 
         static void Main(string[] args)
         {
+            // Declare new simulation
             SimulationManager simulation = new SimulationManager(connectionString, prefixDevice, NumberOfDevices);
 
+            // Add devices to your IoT hub's identity registry
             simulation.AddDevices().Wait();
 
+            // Reads devices to connect for simulation
             simulation.GetDevices().Wait();
 
-  //          displayListOfDevices(simulation);
+//          displayListOfDevices(simulation); // for test
+
+            // Launch the simulation
             simulation.LaunchTest();
 
+            // Wait for exit
             Console.WriteLine("Press the Enter key to exit.");
             Console.ReadLine();
 
+            // Delete devices after simulation
             simulation.RemoveDevices().Wait();
         }
 

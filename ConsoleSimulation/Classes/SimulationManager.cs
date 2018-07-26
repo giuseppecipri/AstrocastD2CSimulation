@@ -37,7 +37,7 @@ namespace ConsoleSimulation
             this.prefixDevice = prefixDevice;
             this.listOfDevices = new List<DeviceEntity>();
             this.registryManager = RegistryManager.CreateFromConnectionString(iotHubConnectionString);
-            this.telemetryInterval = telemetryInterval; //  Seconds
+            this.telemetryInterval = telemetryInterval; //  In thousandths of seconds
         }
         public List<DeviceEntity> getListOfDevices()
         {
