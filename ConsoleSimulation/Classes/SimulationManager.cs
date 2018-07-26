@@ -144,8 +144,6 @@ namespace ConsoleSimulation
             {
                 try
                 {
-  //                  Console.ResetColor();
- //                   Console.WriteLine(device.Id);
                     // Connect to the IoT hub using the MQTT protocol
                     DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(device.ConnectionString, Microsoft.Azure.Devices.Client.TransportType.Mqtt);
                     SendDeviceToCloudMessagesAsync(deviceClient, device.Id);

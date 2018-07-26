@@ -19,35 +19,54 @@ namespace ConsoleSimulation
 
         static void Main(string[] args)
         {
-            // Declare new simulation
-            SimulationManager simulation = new SimulationManager(connectionString, prefixDevice, NumberOfDevices, telemetryInterval);
+            try
+            {
+                // Declare new simulation
+                SimulationManager simulation = new SimulationManager(connectionString, prefixDevice, NumberOfDevices, telemetryInterval);
+                if(simulation == null)
+                {
+                    throw new Exception("Error during the connection. Please check your connection string");
+                }
 
-            // Add devices to your IoT hub's identity registry
-            simulation.AddDevices().Wait();
+                // Add devices to your IoT hub's identity registry
+                simulation.AddDevices().Wait();
 
-            // Reads devices to connect for simulation
-            simulation.GetDevices().Wait();
+                // Reads devices to connect for simulation
+                simulation.GetDevices().Wait();
 
-//          displayListOfDevices(simulation); // for test
+    //          displayListOfDevices(simulation); // for test
 
-            // Launch the simulation
-            simulation.StartSimulation();
+                // Launch the simulation
+                simulation.StartSimulation();
 
-            // Wait for stop simulation
-            Console.ForegroundColor = ConsoleColor.Blue;
-            Console.WriteLine("Press the Enter key to stop simulation.");
-            Console.ReadLine();
+                // Wait for stop simulation
+                Console.ForegroundColor = ConsoleColor.Blue;
+                Console.WriteLine("Press the Enter key to stop simulation.");
+                Console.ReadLine();
 
-            // Stop simulation devices
-            simulation.StopSimulation();
+                // Stop simulation devices
+                simulation.StopSimulation();
 
-            // Wait for exit
-            Console.ForegroundColor = ConsoleColor.Blue;
-            Console.WriteLine("Press the Enter key to exit.");
-            Console.ReadLine();
+                // Wait for exit
+                Console.ForegroundColor = ConsoleColor.Blue;
+                Console.WriteLine("Press the Enter key to exit.");
+                Console.ReadLine();
 
-            // Delete devices after simulation
-            simulation.RemoveDevices().Wait();
+                // Delete devices after simulation
+                simulation.RemoveDevices().Wait();
+            }
+            catch (FormatException ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine(ex.Message + " : Please check your connection string");
+                Console.ReadLine();
+            }
+            catch (Exception ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine(ex.Message);
+                Console.ReadLine();
+            }
         }
 
         private static void displayListOfDevices(SimulationManager simulation)
