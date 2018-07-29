@@ -1,92 +1,77 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 
 namespace ConsoleSimulation
 {
     class Program
     {
-        // Target Azure IoT Hub : connection string (example : HostName=<your iot hub name>.azure-devices.net;SharedAccessKeyName=<your user>;SharedAccessKey=<your key>)
-        private static string connectionString;
+        // Target IoT Hub : connection string
+        private static string connectionString = "<your_hub_connection_string>";
 
-        // Prefix of the devices id (example : "hesgc_astrocast_")
-        private static string prefixDevice;
+        // Prefix of the devices id
+        private static string prefixDevice = "hesgc_astrocast_";
 
-        // Number of devices to simulate (example : 20)
-        private static int numberOfDevices;
+        // Number of devices to simulate
+        private static int NumberOfDevices = 2;
 
-        // Telemetry frequency (Seconds): Set how often to send telemetry from each device (example : 1)
-        private static int telemetryInterval;
+        // Telemetry frequency (Seconds): Set how often to send telemetry from each device
+        private static int telemetryInterval = 1;
 
         static void Main(string[] args)
         {
             try
             {
-                // Read file configuration
-                GetConfiguration_AppSettings();
-
-                //----------- Declare a new simulation
-                SimulationManager simulation = new SimulationManager(connectionString, prefixDevice, numberOfDevices, telemetryInterval);
+                // Declare new simulation
+                SimulationManager simulation = new SimulationManager(connectionString, prefixDevice, NumberOfDevices, telemetryInterval);
                 if(simulation == null)
                 {
                     throw new Exception("Error during the connection. Please check your connection string");
                 }
 
-                //----------- Start the complet simulation scenario
-                simulation.StartCompleteSimulation();
+                // Add devices to your IoT hub's identity registry
+                simulation.AddDevices().Wait();
+
+                // Reads devices to connect for simulation
+                simulation.GetDevices().Wait();
+
+    //          displayListOfDevices(simulation); // for test
+
+                // Launch the simulation
+                simulation.StartSimulation();
 
                 // Wait for stop simulation
-                Console_output("Press the Enter key to stop simulation.", ConsoleColor.Blue);
-                //----------- Stop simulation devices
+                Console.ForegroundColor = ConsoleColor.Blue;
+                Console.WriteLine("Press the Enter key to stop simulation.");
+                Console.ReadLine();
+
+                // Stop simulation devices
                 simulation.StopSimulation();
 
-                // Wait for remove devices
-                Console_output("Press the Enter key to remove devices.", ConsoleColor.Blue);
-                //----------- Delete devices after simulation
-                simulation.RemoveDevices_Async().Wait();
-
                 // Wait for exit
-                Console_output("Press the Enter key to exit.", ConsoleColor.Blue);
+                Console.ForegroundColor = ConsoleColor.Blue;
+                Console.WriteLine("Press the Enter key to exit.");
+                Console.ReadLine();
 
+                // Delete devices after simulation
+                simulation.RemoveDevices().Wait();
             }
             catch (FormatException ex)
             {
-                Console_output(ex.Message + " : Please check your connection string", ConsoleColor.Red);
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine(ex.Message + " : Please check your connection string");
+                Console.ReadLine();
             }
             catch (Exception ex)
             {
-                Console_output(ex.Message, ConsoleColor.Red);
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine(ex.Message);
+                Console.ReadLine();
             }
         }
 
-        private static void GetConfiguration_AppSettings()
-        {
-
-            // Target Azure IoT Hub : connection string (example : HostName=<your iot hub name>.azure-devices.net;SharedAccessKeyName=<your user>;SharedAccessKey=<your key>)
-            connectionString = ConfigurationManager.AppSettings["connectionStringIoTHub"];
-
-            // Prefix of the devices id (example : "hesgc_astrocast_")
-            prefixDevice = ConfigurationManager.AppSettings["prefixDevice"];
-
-            // Number of devices to simulate (example : 20)
-            numberOfDevices = int.Parse(ConfigurationManager.AppSettings["numberOfDevices"]);
-
-            // Telemetry frequency (Seconds): Set how often to send telemetry from each device (example : 1)
-            telemetryInterval = int.Parse(ConfigurationManager.AppSettings["telemetryInterval"]);
-   
-        }
-
-        private static void Console_output(string message, ConsoleColor color)
-        {
-            Console.ForegroundColor = color;
-            Console.WriteLine(message);
-            Console.ReadLine();
-        }
-
-        // For test
         private static void displayListOfDevices(SimulationManager simulation)
         {
-            List<DeviceEntity> listOfDevices = simulation.GetListOfDevices();
+            List<DeviceEntity> listOfDevices = simulation.getListOfDevices();
             foreach(DeviceEntity device in listOfDevices)
             {
                 Console.WriteLine(device.Id);

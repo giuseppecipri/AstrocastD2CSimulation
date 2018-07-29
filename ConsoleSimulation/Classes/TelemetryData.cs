@@ -5,14 +5,14 @@ namespace ConsoleSimulation
 {
     class TelemetryData
     {
-        public string deviceId { get; set; }
-        public DateTime sendingDateTime { get; set; }
         public int protocolVersion { get; set; }
+        public string deviceId { get; set; }
         public string messageData { get; set; }
-        public string pointInfo { get; set; }
-        public string level { get; set; }
         public double temperature { get; set; }
         public double humidity { get; set; }
+        public string pointInfo { get; set; }
+        public string level { get; set; }
+        public DateTime sendingDateTime { get; set; }
 
         // Empty constructor
         public TelemetryData() { }
@@ -22,19 +22,16 @@ namespace ConsoleSimulation
         {
             this.protocolVersion = protocolVersion;
             this.deviceId = deviceId;
-
             // set random values for temperature, humidity, level and pointInfo
-            SetRandomValues();
+            SetRandomValue();
 
-            // set body of message
             messageData = Convert.ToBase64String(ASCIIEncoding.UTF8.GetBytes(pointInfo));
-            
-            // set sending date-time in universal time format
+                    
             sendingDateTime = DateTime.UtcNow;
         }
 
         // set random values for temperature, humidity, level and pointInfo
-        private void SetRandomValues()
+        private void SetRandomValue()
         {
             double minTemperature = 20;
             double minHumidity = 60;
@@ -43,7 +40,8 @@ namespace ConsoleSimulation
             temperature = minTemperature + rand.NextDouble() * 15;
             humidity = minHumidity + rand.NextDouble() * 20;
 
-            if (rand.NextDouble() > 0.8)
+
+            if (rand.NextDouble() > 0.75)
             {
                 if (rand.NextDouble() > 0.5)
                 {
@@ -61,6 +59,7 @@ namespace ConsoleSimulation
                 level = "normal";
                 pointInfo = "This is a normal message.";
             }
+
         }
     }
 }
