@@ -64,13 +64,13 @@ namespace ConsoleSimulation
  
             // Target IoT Hub : connection string
             //string connectionString = "HostName=hesgcAstrocast-S1.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=qmuYOARsJUB8Oa6NGK0tDPGwygehA5seLSwDP9OpEtA=";
-            connectionString = ConfigurationManager.AppSettings["IoTHub.ConnectionString"];
+            connectionString = ConfigurationManager.AppSettings["connectionStringIoTHub"];
 
             // Prefix of the devices id (for exemple "hesgc_astrocast_")
             prefixDevice = ConfigurationManager.AppSettings["prefixDevice"];
 
             // Number of devices to simulate
-            numberOfDevices = int.Parse(ConfigurationManager.AppSettings["NumberOfDevices"]);
+            numberOfDevices = int.Parse(ConfigurationManager.AppSettings["numberOfDevices"]);
 
             // Telemetry frequency (Seconds): Set how often to send telemetry from each device
             telemetryInterval = int.Parse(ConfigurationManager.AppSettings["telemetryInterval"]);
